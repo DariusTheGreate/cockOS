@@ -1,12 +1,12 @@
 
-GCCPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore
+GCCPARAMS = -m32 -nostdlib -fno-builtin  -fno-exceptions -fno-leading-underscore
 ASPARAMS = --32
 LDPARAMS = -melf_i386
 
-objects = loader.o kernel.o
+objects = loader.o vga.o ports.o kernel.o gdt.o 
 
-%.o: %.cpp
-	gcc $(GCCPARAMS) -c -o $@ $<
+%.o: %.c
+	gcc $(GCCPARAMS) -c -o  $@ $< 
 
 %.o: %.s
 	as $(ASPARAMS) -o $@ $<
@@ -33,7 +33,13 @@ cockOSkernel.iso: cockOSkernel.bin
 
 run: cockOSkernel.iso
 	(killall VirtualBox && sleep 1) || true
-	VirtualBox --startvm 'cockOS' &
+	vboxmanage startvm 'cockOS' &
 
 install: cockOSkernel.bin
 	sudo cp $< /boot/cockOSkernel.bin
+
+start: 
+	make kernel.o
+	make cockOSkernel.bin
+	make cockOSkernel.iso
+	make run
